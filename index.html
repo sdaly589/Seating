@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Your Table</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 18px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .result {
+            text-align: center;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .table-number {
+            font-size: 4em;
+            font-weight: bold;
+            color: #667eea;
+            margin: 20px 0;
+        }
+
+        .guest-name {
+            font-size: 1.5em;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .label {
+            font-size: 1.2em;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .error {
+            color: #e74c3c;
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .suggestions {
+            list-style: none;
+            margin-top: 5px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+            background: white;
+        }
+
+        .suggestions.show {
+            display: block;
+        }
+
+        .suggestions li {
+            padding: 12px 20px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .suggestions li:hover {
+            background: #f8f9fa;
+        }
+
+        .suggestions li:last-child {
+            border-bottom: none;
+        }
+
+        .loading {
+            text-align: center;
+            color: #888;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎄 Find Your Table 🎄</h1>
+
+        <div class="search-box">
+            <input
+                type="text"
+                id="searchInput"
+                placeholder="Type your name..."
+                autocomplete="off"
+            >
+            <ul class="suggestions" id="suggestions"></ul>
+        </div>
+
+        <div class="loading" id="loading">Loading guest list...</div>
+        <div class="error" id="error">Guest not found. Please check the spelling or ask at the front desk.</div>
+
+        <div class="result" id="result">
+            <div class="guest-name" id="guestName"></div>
+            <div class="label">Table Number</div>
+            <div class="table-number" id="tableNumber"></div>
+        </div>
+    </div>
+
+    <script>
+        // IMPORTANT: Replace this URL with your published CSV URL
+        // To get it: File → Share → Publish to web → CSV format
+        const CSV_URL = 'YOUR_PUBLISHED_CSV_URL_HERE';
+
+        let guestList = [];
+
+        // Load the CSV data
+        async function loadGuestList() {
+            try {
+                const response = await fetch(CSV_URL);
+                const csvText = await response.text();
+
+                // Parse CSV
+                const lines = csvText.split('\n');
+                const headers = lines[0].split(',').map(h => h.trim());
+
+                // Find column indexes (adjust these if your column names are different)
+                const nameIndex = headers.findIndex(h => h.toLowerCase().includes('name'));
+                const tableIndex = headers.findIndex(h => h.toLowerCase().includes('table'));
+
+                // Parse data rows
+                for (let i = 1; i < lines.length; i++) {
+                    if (lines[i].trim()) {
+                        const values = lines[i].split(',').map(v => v.trim());
+                        if (values[nameIndex] && values[tableIndex]) {
+                            guestList.push({
+                                name: values[nameIndex].replace(/"/g, ''),
+                                table: values[tableIndex].replace(/"/g, '')
+                            });
+                        }
+                    }
+                }
+
+                document.getElementById('loading').style.display = 'none';
+                console.log(`Loaded ${guestList.length} guests`);
+            } catch (error) {
+                document.getElementById('loading').textContent = 'Error loading guest list. Please refresh the page.';
+                console.error('Error loading CSV:', error);
+            }
+        }
+
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const suggestions = document.getElementById('suggestions');
+        const result = document.getElementById('result');
+        const error = document.getElementById('error');
+
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+
+            // Clear previous results
+            result.classList.remove('show');
+            error.classList.remove('show');
+            suggestions.innerHTML = '';
+
+            if (query.length < 2) {
+                suggestions.classList.remove('show');
+                return;
+            }
+
+            // Find matches
+            const matches = guestList.filter(guest =>
+                guest.name.toLowerCase().includes(query)
+            );
+
+            if (matches.length === 0) {
+                suggestions.classList.remove('show');
+                error.classList.add('show');
+                return;
+            }
+
+            // Show suggestions
+            matches.slice(0, 5).forEach(guest => {
+                const li = document.createElement('li');
+                li.textContent = guest.name;
+                li.addEventListener('click', () => showResult(guest));
+                suggestions.appendChild(li);
+            });
+
+            suggestions.classList.add('show');
+
+            // Auto-select if exact match
+            const exactMatch = matches.find(g =>
+                g.name.toLowerCase() === query
+            );
+            if (exactMatch) {
+                showResult(exactMatch);
+            }
+        });
+
+        function showResult(guest) {
+            document.getElementById('guestName').textContent = guest.name;
+            document.getElementById('tableNumber').textContent = guest.table;
+            result.classList.add('show');
+            suggestions.classList.remove('show');
+            error.classList.remove('show');
+            searchInput.value = guest.name;
+        }
+
+        // Load data when page loads
+        loadGuestList();
+    </script>
+</body>
+</html>
