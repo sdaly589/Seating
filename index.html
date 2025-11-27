@@ -194,19 +194,19 @@
                         const employee = values[employeeIndex]?.replace(/"/g, '');
                         const guest = values[guestIndex]?.replace(/"/g, '');
 
-                        // Add employee entry
-                        if (employee && table) {
+                        // Add employee entry (allow empty table numbers)
+                        if (employee) {
                             guestList.push({
                                 name: employee,
-                                table: table,
+                                table: table || 'TBD',
                                 type: 'Employee'
                             });
                         }
                         // Add guest entry (if there is one)
-                        if (guest && table) {
+                        if (guest) {
                             guestList.push({
                                 name: guest,
-                                table: table,
+                                table: table || 'TBD',
                                 type: 'Guest'
                             });
                         }
