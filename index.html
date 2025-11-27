@@ -181,18 +181,33 @@
                 const lines = csvText.split('\n');
                 const headers = lines[0].split(',').map(h => h.trim());
 
-                // Find column indexes (adjust these if your column names are different)
-                const nameIndex = headers.findIndex(h => h.toLowerCase().includes('name'));
+                // Find column indexes: Employee (A), Guest (B), Table (C)
+                const employeeIndex = headers.findIndex(h => h.toLowerCase().includes('employee'));
+                const guestIndex = headers.findIndex(h => h.toLowerCase().includes('guest'));
                 const tableIndex = headers.findIndex(h => h.toLowerCase().includes('table'));
 
-                // Parse data rows
+                // Parse data rows - create entries for both employees and guests
                 for (let i = 1; i < lines.length; i++) {
                     if (lines[i].trim()) {
                         const values = lines[i].split(',').map(v => v.trim());
-                        if (values[nameIndex] && values[tableIndex]) {
+                        const table = values[tableIndex]?.replace(/"/g, '');
+                        const employee = values[employeeIndex]?.replace(/"/g, '');
+                        const guest = values[guestIndex]?.replace(/"/g, '');
+
+                        // Add employee entry
+                        if (employee && table) {
                             guestList.push({
-                                name: values[nameIndex].replace(/"/g, ''),
-                                table: values[tableIndex].replace(/"/g, '')
+                                name: employee,
+                                table: table,
+                                type: 'Employee'
+                            });
+                        }
+                        // Add guest entry (if there is one)
+                        if (guest && table) {
+                            guestList.push({
+                                name: guest,
+                                table: table,
+                                type: 'Guest'
                             });
                         }
                     }
