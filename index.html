@@ -150,9 +150,136 @@
             color: #888;
             padding: 20px;
         }
+
+        /* Christmas Lights */
+        .lights-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .wire {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: #1a1a1a;
+        }
+
+        .lights {
+            display: flex;
+            justify-content: space-around;
+            padding: 0 10px;
+        }
+
+        .light {
+            width: 15px;
+            height: 25px;
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            margin-top: 4px;
+            position: relative;
+            animation: swing 2s ease-in-out infinite;
+        }
+
+        .light::before {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            background: #333;
+            border-radius: 2px;
+        }
+
+        /* TrueContext branded colors - lime and white */
+        .light.lime {
+            background: var(--tc-lime);
+            box-shadow: 0 0 20px var(--tc-lime), 0 0 40px var(--tc-lime);
+            animation: glow-lime 1s ease-in-out infinite alternate, swing 2s ease-in-out infinite;
+        }
+
+        .light.white {
+            background: #ffffff;
+            box-shadow: 0 0 20px #ffffff, 0 0 40px #ffffff;
+            animation: glow-white 1s ease-in-out infinite alternate, swing 2s ease-in-out infinite;
+        }
+
+        .light.lime-dim {
+            background: #5a6610;
+            box-shadow: 0 0 5px #5a6610;
+            animation: glow-lime-alt 1s ease-in-out infinite alternate, swing 2s ease-in-out infinite;
+        }
+
+        .light.white-dim {
+            background: #666666;
+            box-shadow: 0 0 5px #666666;
+            animation: glow-white-alt 1s ease-in-out infinite alternate, swing 2s ease-in-out infinite;
+        }
+
+        @keyframes glow-lime {
+            0% { background: var(--tc-lime); box-shadow: 0 0 20px var(--tc-lime), 0 0 40px var(--tc-lime); }
+            100% { background: #5a6610; box-shadow: 0 0 5px #5a6610; }
+        }
+
+        @keyframes glow-lime-alt {
+            0% { background: #5a6610; box-shadow: 0 0 5px #5a6610; }
+            100% { background: var(--tc-lime); box-shadow: 0 0 20px var(--tc-lime), 0 0 40px var(--tc-lime); }
+        }
+
+        @keyframes glow-white {
+            0% { background: #ffffff; box-shadow: 0 0 20px #ffffff, 0 0 40px #ffffff; }
+            100% { background: #666666; box-shadow: 0 0 5px #666666; }
+        }
+
+        @keyframes glow-white-alt {
+            0% { background: #666666; box-shadow: 0 0 5px #666666; }
+            100% { background: #ffffff; box-shadow: 0 0 20px #ffffff, 0 0 40px #ffffff; }
+        }
+
+        @keyframes swing {
+            0%, 100% { transform: rotate(-3deg); }
+            50% { transform: rotate(3deg); }
+        }
+
+        /* Stagger the swing animation */
+        .light:nth-child(odd) { animation-delay: 0s; }
+        .light:nth-child(even) { animation-delay: 0.5s; }
     </style>
 </head>
 <body>
+    <!-- Christmas Lights at the top -->
+    <div class="lights-container">
+        <div class="wire"></div>
+        <div class="lights">
+            <div class="light lime"></div>
+            <div class="light white-dim"></div>
+            <div class="light lime-dim"></div>
+            <div class="light white"></div>
+            <div class="light lime"></div>
+            <div class="light white-dim"></div>
+            <div class="light lime-dim"></div>
+            <div class="light white"></div>
+            <div class="light lime"></div>
+            <div class="light white-dim"></div>
+            <div class="light lime-dim"></div>
+            <div class="light white"></div>
+            <div class="light lime"></div>
+            <div class="light white-dim"></div>
+            <div class="light lime-dim"></div>
+            <div class="light white"></div>
+            <div class="light lime"></div>
+            <div class="light white-dim"></div>
+            <div class="light lime-dim"></div>
+            <div class="light white"></div>
+        </div>
+    </div>
+
     <div class="container">
         <h1>🎄 Find Your Table 🎄</h1>
 
